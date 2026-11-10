@@ -188,7 +188,8 @@ export default async function UserPage({ params, searchParams }) {
       <div className="bg-black text-white min-h-screen overflow-x-hidden">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          // Escape "<" so user content (bio, button URLs) cannot close the script tag.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
         />
 
         {/* === HERO SECTION - Split Layout === */}
