@@ -521,6 +521,25 @@ html {
   @apply bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent;
 }
 
+/* === Top Locations map (react-simple-maps v5) ===
+   Reproduces the v3 per-state styles: "hover" while pointer-hovered or keyboard-focused,
+   and the 250ms transition only when returning to the default state. Default/selected
+   fill and stroke come from SVG attributes. v3's "pressed" style never rendered in
+   practice (d3-zoom handles mousedown for panning), so there is no :active rule. */
+.tlm-country {
+  outline: none;
+  transition: all 250ms ease;
+}
+
+.tlm-country:hover,
+.tlm-country:focus-visible {
+  fill: #10b981;
+  stroke: #ffffff;
+  stroke-width: 1;
+  cursor: pointer;
+  transition: none;
+}
+
 /* === Reusable Dashed Add Buttons === */
 .btn-dashed-add {
   @apply w-full py-3 px-4 border-2 border-dashed border-gray-200/60 dark:border-slate-700/60 rounded-xl text-gray-500 hover:text-indigo-600 hover:border-indigo-500/60 dark:hover:text-indigo-400 dark:hover:border-indigo-400/50 flex items-center justify-center gap-2 font-medium transition-all duration-200;
