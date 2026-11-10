@@ -1,8 +1,10 @@
 
 'use client';
+import { use } from "react";
 import LoginWithGoogle from "@/components/ui/LoginWithGoogle";
 
-export default function LoginPage({ searchParams }) {
+export default function LoginPage(props) {
+  const searchParams = use(props.searchParams);
   const desiredUsername = searchParams?.username;
 
   return (

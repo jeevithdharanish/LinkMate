@@ -513,9 +513,11 @@ Defined in `src/app/globals.css` (~429 lines):
   "dev": "next dev",
   "build": "next build",
   "start": "next start",
-  "lint": "next lint"
+  "lint": "eslint ."
 }
 ```
+
+`next lint` was removed in Next.js 16; linting uses the ESLint CLI with `eslint.config.mjs`.
 
 ---
 

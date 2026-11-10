@@ -16,7 +16,8 @@ import { Project } from "@/models/Project";
 import PageProjectForm from "@/components/features/portfolio/page-forms/PageProjectForm";
 import AccountHeader from "@/components/layout/AccountHeader";
 
-export default async function AccountPage({ searchParams }) {
+export default async function AccountPage(props) {
+  const searchParams = await props.searchParams;
   const session = await getServerSession(authOptions);
   let desiredUsername = searchParams?.desiredUsername ? String(searchParams.desiredUsername) : null;
 

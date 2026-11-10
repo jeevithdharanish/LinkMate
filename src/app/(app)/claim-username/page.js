@@ -5,7 +5,8 @@ import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
-export default async function ClaimUsernamePage({ searchParams }) {
+export default async function ClaimUsernamePage(props) {
+  const searchParams = await props.searchParams;
   const session = await getServerSession(authOptions);
 
   // The query param can arrive as a string or an array (?x=a&x=b) — keep the first value

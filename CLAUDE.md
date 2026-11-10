@@ -17,7 +17,7 @@ No test framework is configured.
 
 ## Architecture
 
-Next.js 14 **App Router** project (JavaScript, not TypeScript — `jsconfig.json` with `@/*` → `src/*`). Single product: a Linktree-style portfolio builder with analytics.
+Next.js 16 **App Router** (React 19) project (JavaScript, not TypeScript — `jsconfig.json` with `@/*` → `src/*`). Single product: a Linktree-style portfolio builder with analytics.
 
 ### Route groups (`src/app/`)
 

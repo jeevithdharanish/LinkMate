@@ -267,28 +267,13 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
                             });
                           }}
                           onMouseLeave={() => setTooltip(null)}
-                          style={{
-                            default: {
-                              fill: isSelected ? '#059669' : fillColor,
-                              stroke: isSelected ? '#34d399' : '#27272a',
-                              strokeWidth: isSelected ? 1.5 : 0.5,
-                              outline: 'none',
-                              transition: 'all 250ms ease',
-                            },
-                            hover: {
-                              fill: '#10b981',
-                              stroke: '#ffffff',
-                              strokeWidth: 1,
-                              outline: 'none',
-                              cursor: 'pointer',
-                            },
-                            pressed: {
-                              fill: '#059669',
-                              stroke: '#ffffff',
-                              strokeWidth: 1,
-                              outline: 'none',
-                            },
-                          }}
+                          // react-simple-maps v5 dropped style={{ default, hover, pressed }}.
+                          // Default/selected colours are SVG presentation attributes so the
+                          // hover/focus rules for .tlm-country in globals.css can override them.
+                          className="tlm-country"
+                          fill={isSelected ? '#059669' : fillColor}
+                          stroke={isSelected ? '#34d399' : '#27272a'}
+                          strokeWidth={isSelected ? 1.5 : 0.5}
                         />
                       );
                     })

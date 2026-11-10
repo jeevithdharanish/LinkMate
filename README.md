@@ -58,7 +58,7 @@
 
 | Category | Technologies |
 |----------|-------------|
-| **Framework** | Next.js 14 (App Router) |
+| **Framework** | Next.js 16 (App Router) |
 | **Database** | MongoDB with Mongoose |
 | **Authentication** | NextAuth.js (Google OAuth) |
 | **Styling** | Tailwind CSS |
@@ -73,7 +73,7 @@
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 20.9+ (required by Next.js 16 and `@aws-sdk/client-s3`)
 - MongoDB database (local or [MongoDB Atlas](https://www.mongodb.com/atlas))
 - Google OAuth credentials ([Google Cloud Console](https://console.cloud.google.com/))
 - AWS S3 bucket (for image uploads)
