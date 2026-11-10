@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.3",
@@ -30,8 +30,8 @@
     "uniqid": "^5.4.0"
   },
   "devDependencies": {
-    "eslint": "^8",
-    "eslint-config-next": "^14.2.35",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.4.6",
     "postcss": "^8.5.32",
     "tailwindcss": "^3.4.19"
   }
