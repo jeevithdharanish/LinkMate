@@ -9,6 +9,25 @@ const ALLOWED_TYPES = [
   'application/pdf' // for resume uploads
 ];
 
+// Extension is derived from the validated type, never from the client filename.
+const EXTENSIONS = {
+  'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
+  'image/gif': 'gif', 'application/pdf': 'pdf',
+};
+
+// The declared MIME type is client-controlled; check the file's magic bytes match it.
+function contentMatchesType(buf, type) {
+  const ascii = (start, end) => buf.subarray(start, end).toString('latin1');
+  switch (type) {
+    case 'image/jpeg': return buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+    case 'image/png': return buf.length > 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    case 'image/gif': return ascii(0, 6) === 'GIF87a' || ascii(0, 6) === 'GIF89a';
+    case 'image/webp': return ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP';
+    case 'application/pdf': return ascii(0, 5) === '%PDF-';
+    default: return false;
+  }
+}
+
 export async function POST(req) {
   try {
     // Auth check
@@ -47,20 +66,27 @@ export async function POST(req) {
       });
 
       const randomId = uniqid();
-      const ext = file.name.split('.').pop();
-      const newFilename = randomId + '.' + ext;
+      const newFilename = randomId + '.' + EXTENSIONS[file.type];
       const bucketName = process.env.BUCKET_NAME;
 
       const chunks = [];
       for await (const chunk of file.stream()) {
         chunks.push(chunk);
       }
+      const body = Buffer.concat(chunks);
+
+      if (body.length > MAX_FILE_SIZE || !contentMatchesType(body, file.type)) {
+        return Response.json(
+          { error: `File content does not match its type (${file.type}) or is too large.` },
+          { status: 400 }
+        );
+      }
 
       await s3Client.send(new PutObjectCommand({
         Bucket: bucketName,
         Key: newFilename,
         ACL: 'public-read',
-        Body: Buffer.concat(chunks),
+        Body: body,
         ContentType: file.type,
       }));
 
