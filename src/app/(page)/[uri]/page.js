@@ -143,7 +143,7 @@ export default async function UserPage({ params, searchParams }) {
 
     // Track page view - non-blocking (don't await).
     // Skips link-preview bots; the owner's own visits are stored but flagged.
-    const visitorMeta = getVisitorMeta(headers());
+    const visitorMeta = getVisitorMeta(await headers());
     // An explicit ?ref= tag beats the Referer header (which many apps strip)
     const refReferrer = refTagToReferrer(resolvedSearchParams?.ref);
     if (refReferrer) visitorMeta.referrer = refReferrer;
