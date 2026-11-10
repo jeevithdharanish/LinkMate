@@ -73,7 +73,7 @@
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 20+ (required by `@aws-sdk/client-s3`)
 - MongoDB database (local or [MongoDB Atlas](https://www.mongodb.com/atlas))
 - Google OAuth credentials ([Google Cloud Console](https://console.cloud.google.com/))
 - AWS S3 bucket (for image uploads)
