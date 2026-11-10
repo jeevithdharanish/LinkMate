@@ -31,8 +31,9 @@ export default function Header() {
                 Hello, {session?.user?.name || session?.user?.email || 'Guest'}
               </Link>
               <LogoutButton
-                className="text-sm text-gray-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 px-3 py-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-all duration-200 font-medium"
-                iconClasses="text-xs"
+                className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-200"
+                iconLeft
+                iconClasses="w-3.5 h-3.5"
               />
             </>
           )}

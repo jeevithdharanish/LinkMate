@@ -34,20 +34,20 @@ export default async function AnalyticsPage() {
   const analytics = await getAnalytics(page.uri, session.user.email);
 
   const summaryCards = [
-    { label: 'Total Views', value: analytics.totalViews.toLocaleString(), today: `${analytics.todayViews} today`, icon: faEye, color: 'emerald', trend: analytics.viewTrend },
-    { label: 'Link Clicks', value: analytics.totalLinkClicks.toLocaleString(), today: `${analytics.todayLinkClicks} today`, icon: faLink, color: 'blue', trend: analytics.linkTrend },
-    { label: 'Social Clicks', value: analytics.totalSocialClicks.toLocaleString(), today: `${analytics.todaySocialClicks} today`, icon: faExternalLinkAlt, color: 'purple', trend: analytics.socialTrend },
-    { label: 'Project Clicks', value: analytics.totalProjectClicks.toLocaleString(), today: `${analytics.todayProjectClicks} today`, icon: faProjectDiagram, color: 'rose', trend: analytics.projectTrend },
-    { label: 'Click Rate', value: `${analytics.clickRate}%`, today: `${analytics.todayClickRate}% today`, icon: faPercent, color: 'amber', note: 'link clicks / views' },
-    { label: 'Bounce Rate', value: `${analytics.bounceRate}%`, today: `zero clicks`, icon: faArrowRightFromBracket, color: 'zinc', note: 'no engagement' },
+    { label: 'Total Views', value: analytics.totalViews.toLocaleString(), today: `${analytics.todayViews} today`, icon: faEye, trend: analytics.viewTrend },
+    { label: 'Link Clicks', value: analytics.totalLinkClicks.toLocaleString(), today: `${analytics.todayLinkClicks} today`, icon: faLink, trend: analytics.linkTrend },
+    { label: 'Social Clicks', value: analytics.totalSocialClicks.toLocaleString(), today: `${analytics.todaySocialClicks} today`, icon: faExternalLinkAlt, trend: analytics.socialTrend },
+    { label: 'Project Clicks', value: analytics.totalProjectClicks.toLocaleString(), today: `${analytics.todayProjectClicks} today`, icon: faProjectDiagram, trend: analytics.projectTrend },
+    { label: 'Click Rate', value: `${analytics.clickRate}%`, today: `${analytics.todayClickRate}% today`, icon: faPercent, note: 'link clicks / views' },
+    { label: 'Bounce Rate', value: `${analytics.bounceRate}%`, today: `zero clicks`, icon: faArrowRightFromBracket, note: 'no engagement' },
   ];
 
   const totalClicks = analytics.totalLinkClicks + analytics.totalSocialClicks + analytics.totalProjectClicks;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 rounded-2xl p-6 text-white shadow-elevated relative overflow-hidden">
+      {/* Header — pinned on scroll, same as AccountHeader on My Page */}
+      <div className="md:sticky md:top-0 md:z-50 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 rounded-2xl p-6 text-white shadow-elevated relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -92,7 +92,7 @@ export default async function AnalyticsPage() {
 
       {/* Chart */}
       <div className="glass glass-hover rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Views & Clicks Over Time</h2>
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">Views & Clicks Over Time</h2>
         <Chart data={analytics.chartData} />
       </div>
 
@@ -117,19 +117,19 @@ export default async function AnalyticsPage() {
 
       {/* Links Performance: all links ranked by clicks, deleted links at the bottom */}
       <div className="glass glass-hover rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Links Performance</h2>
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">Links Performance</h2>
         {analytics.linksPerformance.length > 0 ? (
           <div className="space-y-4">
             {analytics.linksPerformance.map((link, index) => {
               const progress = analytics.totalLinkClicks > 0 ? (link.totalClicks / analytics.totalLinkClicks) * 100 : 0;
               return (
-                <div key={`${link.url}-${index}`} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-gray-50/50 dark:bg-slate-800/40 rounded-xl border border-gray-200 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-all duration-200">
+                <div key={`${link.url}-${index}`} className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-zinc-50/50 dark:bg-zinc-800/40 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-all duration-200">
                   <div className="flex items-center min-w-0 flex-1">
-                    <div className="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-950/40 rounded-lg flex items-center justify-center mr-3">
-                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">#{index + 1}</span>
+                    <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 dark:bg-indigo-950/40 rounded-lg flex items-center justify-center mr-3">
+                      <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">#{index + 1}</span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`font-medium truncate ${link.isDeleted ? 'text-red-600' : 'text-gray-900 dark:text-white'}`}>
+                      <p className={`font-medium truncate ${link.isDeleted ? 'text-red-600' : 'text-zinc-900 dark:text-white'}`}>
                         {link.title}
                         {link.isDeleted && (
                           <span className="ml-2 px-2 py-0.5 bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400 rounded-full text-xs font-medium align-middle">
@@ -143,13 +143,13 @@ export default async function AnalyticsPage() {
                         )}
                       </p>
                       {link.isDeleted ? (
-                        <p className="text-sm text-gray-400 dark:text-slate-500 truncate">{link.url}</p>
+                        <p className="text-sm text-zinc-400 dark:text-zinc-500 truncate">{link.url}</p>
                       ) : (
                         <a
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 truncate block"
+                          className="text-sm text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 truncate block"
                         >
                           {link.url}
                           <FontAwesomeIcon icon={faExternalLinkAlt} className="ml-1 text-xs" />
@@ -159,9 +159,9 @@ export default async function AnalyticsPage() {
                   </div>
                   <div className="flex items-center gap-4 md:ml-4">
                     <WeekTotalStats week={link.weekClicks} total={link.totalClicks} color="indigo" />
-                    <div className="w-20 bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                    <div className="w-20 bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${link.isDeleted ? 'bg-red-400' : 'bg-blue-500 dark:bg-blue-600'}`}
+                        className={`h-2 rounded-full ${link.isDeleted ? 'bg-red-400' : 'bg-indigo-500 dark:bg-indigo-600'}`}
                         style={{ width: `${Math.max(progress, 2)}%` }}
                       ></div>
                     </div>
@@ -171,8 +171,8 @@ export default async function AnalyticsPage() {
             })}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-500 dark:text-slate-400">
-            <FontAwesomeIcon icon={faLink} className="text-4xl mb-4 text-gray-300 dark:text-slate-600" />
+          <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
+            <FontAwesomeIcon icon={faLink} className="text-4xl mb-4 text-zinc-300 dark:text-zinc-600" />
             <p>No links added yet</p>
             <p className="text-sm mt-2">Add some links to see their performance</p>
           </div>
@@ -181,7 +181,7 @@ export default async function AnalyticsPage() {
 
       {/* Socials Performance */}
       <div className="glass glass-hover rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Socials Performance</h2>
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">Socials Performance</h2>
         {Object.keys(page.buttons || {}).length > 0 ? (
           <div className="space-y-4">
             {Object.entries(page.buttons).map(([key, value]) => {
@@ -190,13 +190,13 @@ export default async function AnalyticsPage() {
               const Icon = buttonsIcons[key];
 
               return (
-                <div key={key} className="border border-gray-200 dark:border-slate-800 rounded-xl p-4 bg-gray-50/50 dark:bg-slate-800/40 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-all duration-200">
+                <div key={key} className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 bg-zinc-50/50 dark:bg-zinc-800/40 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-all duration-200">
                   <div className="flex flex-col md:flex-row md:items-center gap-4">
                     <div className="flex-1 min-w-0 flex items-center gap-3">
-                      {Icon && <div className="flex-shrink-0 w-10 h-10 bg-gray-100 dark:bg-slate-800 rounded-lg flex items-center justify-center"><FontAwesomeIcon icon={Icon} className="w-5 h-5 text-gray-600 dark:text-slate-400" /></div>}
+                      {Icon && <div className="flex-shrink-0 w-10 h-10 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center"><FontAwesomeIcon icon={Icon} className="w-5 h-5 text-zinc-600 dark:text-zinc-400" /></div>}
                       <div>
-                        <h3 className="font-medium text-gray-900 dark:text-white capitalize">{key}</h3>
-                        <p className="text-sm text-blue-500 dark:text-blue-400 truncate">{value}</p>
+                        <h3 className="font-medium text-zinc-900 dark:text-white capitalize">{key}</h3>
+                        <p className="text-sm text-indigo-500 dark:text-indigo-400 truncate">{value}</p>
                       </div>
                     </div>
                     <WeekTotalStats
@@ -210,8 +210,8 @@ export default async function AnalyticsPage() {
             })}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-500 dark:text-slate-400">
-            <FontAwesomeIcon icon={faExternalLinkAlt} className="text-4xl mb-4 text-gray-300 dark:text-slate-600" />
+          <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
+            <FontAwesomeIcon icon={faExternalLinkAlt} className="text-4xl mb-4 text-zinc-300 dark:text-zinc-600" />
             <p>No social buttons added yet</p>
           </div>
         )}
@@ -219,46 +219,46 @@ export default async function AnalyticsPage() {
 
       {/* Projects Performance */}
       <div className="glass glass-hover rounded-2xl p-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Projects Performance</h2>
+        <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-6">Projects Performance</h2>
         {analytics.projects.length > 0 ? (
           <div className="space-y-4">
             {analytics.projects.map((project) => (
-              <div key={project._id} className="border border-gray-200 dark:border-slate-800 rounded-xl p-4 bg-gray-50/50 dark:bg-slate-800/40 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-all duration-200">
-                <h3 className="font-medium text-gray-900 dark:text-white truncate mb-3">
+              <div key={project._id} className="border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 bg-zinc-50/50 dark:bg-zinc-800/40 hover:border-indigo-200 dark:hover:border-indigo-500/50 transition-all duration-200">
+                <h3 className="font-medium text-zinc-900 dark:text-white truncate mb-3">
                   {project.title || 'Untitled Project'}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* GitHub Link Stats */}
-                  <div className="bg-gray-50 dark:bg-slate-800/60 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-slate-300 mb-2">
+                  <div className="bg-zinc-50 dark:bg-zinc-800/60 rounded-xl p-3">
+                    <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 mb-2">
                       <FontAwesomeIcon icon={faGithub} className="w-4 h-4" />
                       <span className="text-sm font-medium">GitHub</span>
                     </div>
                     <div className="flex items-baseline gap-4">
-                      <span className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.projectClickMaps.total.get(project.githubLink) || 0}</span>
-                      <span className="text-sm text-gray-600 dark:text-slate-400">clicks</span>
+                      <span className="text-2xl font-bold text-zinc-900 dark:text-white">{analytics.projectClickMaps.total.get(project.githubLink) || 0}</span>
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">clicks</span>
                     </div>
-                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{analytics.projectClickMaps.week.get(project.githubLink) || 0} this week</span>
+                    <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">{analytics.projectClickMaps.week.get(project.githubLink) || 0} this week</span>
                   </div>
                   {/* Live Demo Link Stats */}
-                  <div className="bg-gray-50 dark:bg-slate-800/60 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-slate-300 mb-2">
+                  <div className="bg-zinc-50 dark:bg-zinc-800/60 rounded-xl p-3">
+                    <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 mb-2">
                       <FontAwesomeIcon icon={faExternalLinkAlt} className="w-4 h-4" />
                       <span className="text-sm font-medium">Live Demo</span>
                     </div>
                     <div className="flex items-baseline gap-4">
-                      <span className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.projectClickMaps.total.get(project.liveLink) || 0}</span>
-                      <span className="text-sm text-gray-600 dark:text-slate-400">clicks</span>
+                      <span className="text-2xl font-bold text-zinc-900 dark:text-white">{analytics.projectClickMaps.total.get(project.liveLink) || 0}</span>
+                      <span className="text-sm text-zinc-600 dark:text-zinc-400">clicks</span>
                     </div>
-                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">{analytics.projectClickMaps.week.get(project.liveLink) || 0} this week</span>
+                    <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">{analytics.projectClickMaps.week.get(project.liveLink) || 0} this week</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-500 dark:text-slate-400">
-            <FontAwesomeIcon icon={faProjectDiagram} className="text-4xl mb-4 text-gray-300 dark:text-slate-600" />
+          <div className="text-center py-12 text-zinc-500 dark:text-zinc-400">
+            <FontAwesomeIcon icon={faProjectDiagram} className="text-4xl mb-4 text-zinc-300 dark:text-zinc-600" />
             <p>No projects added yet</p>
           </div>
         )}

@@ -1,6 +1,9 @@
-
 'use client';
 import { use } from "react";
+import Link from "next/link";
+import { faLink } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import ParticleNetwork from "@/components/animations/ParticleNetwork";
 import LoginWithGoogle from "@/components/ui/LoginWithGoogle";
 
 export default function LoginPage(props) {
@@ -8,46 +11,46 @@ export default function LoginPage(props) {
   const desiredUsername = searchParams?.username;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-violet-500/10 rounded-full blur-3xl" />
+    <main>
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden px-4 py-12">
+        <div className="absolute inset-0 -z-10">
+          <ParticleNetwork className="opacity-40 dark:opacity-60" />
+        </div>
 
-      <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 w-full max-w-md border border-white/10">
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
-            <span className="text-white text-xl">🔗</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-2">
-            Welcome to LinkMate
-          </h1>
-          {desiredUsername ? (
-            <div className="mb-4 mt-4">
-              <p className="text-slate-300 text-sm mb-3">
-                You&apos;re claiming the username:
-              </p>
-              <div className="bg-white/10 border border-white/10 rounded-xl p-3">
-                <span className="text-indigo-300 font-mono font-semibold text-sm">
-                  linkto/{desiredUsername}
-                </span>
-              </div>
+        <div className="glass rounded-2xl w-full max-w-sm p-8 animate-fade-in-up">
+          <div className="text-center mb-8">
+            <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center mx-auto mb-5 shadow-md">
+              <FontAwesomeIcon icon={faLink} className="text-white text-lg" />
             </div>
-          ) : (
-            <p className="text-slate-400 text-sm">
-              Sign in to create your link page
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-2">
+              Welcome to{' '}
+              <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+                LinkMate
+              </span>
+            </h1>
+            <p className="text-gray-500 dark:text-slate-400 text-sm">
+              {desiredUsername
+                ? 'Sign in to claim your username'
+                : 'Sign in to create your link page'}
             </p>
-          )}
-        </div>
-        <div className="space-y-4">
+            {desiredUsername && (
+              <div className="mt-5 inline-flex items-center rounded-xl border border-indigo-200 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-2 font-mono text-sm">
+                <span className="text-gray-400 dark:text-slate-500">linkmate/</span>
+                <span className="font-semibold text-indigo-600 dark:text-indigo-300">{desiredUsername}</span>
+              </div>
+            )}
+          </div>
+
           <LoginWithGoogle />
+
+          <p className="text-center text-xs text-gray-400 dark:text-zinc-500 mt-6">
+            By signing in, you agree to our{' '}
+            <Link href="/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+              Terms of Service
+            </Link>
+          </p>
         </div>
-        <p className="text-center text-xs text-slate-500 mt-6">
-          By signing in, you agree to our{' '}
-          <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 underline">
-            Terms of Service
-          </a>
-        </p>
       </div>
-    </div>
+    </main>
   );
 }

@@ -24,7 +24,7 @@ export const authOptions = {
     },
   },
   pages: {
-    error: '/login'
+    error: '/main/login'
   }
 };
 

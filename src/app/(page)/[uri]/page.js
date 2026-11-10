@@ -30,6 +30,8 @@ import ProjectSection from "@/components/features/portfolio/page-sections/Projec
 import ParticleNetwork from "@/components/animations/ParticleNetwork";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import Typewriter from "@/components/animations/Typewriter";
+import { stripHighlights } from "@/lib/highlight";
+import { getHeroRoles } from "@/lib/roles";
 
 // Cache page data for 60 seconds — key includes uri for per-page isolation
 const getCachedPageData = unstable_cache(
@@ -40,6 +42,15 @@ const getCachedPageData = unstable_cache(
   ['page-data'],
   { revalidate: 60, tags: ['portfolio'] }
 );
+
+// Hero name size steps down as the name gets longer, so long names stay on one
+// line on desktop instead of wrapping and orphaning the last word.
+function nameSizeClass(name = '') {
+  const len = name.length;
+  if (len <= 10) return 'text-5xl md:text-6xl lg:text-7xl xl:text-8xl';
+  if (len <= 16) return 'text-4xl md:text-5xl lg:text-6xl xl:text-7xl';
+  return 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl';
+}
 
 // Dynamic SEO metadata - uses cached page data
 export async function generateMetadata({ params }) {
@@ -55,7 +66,7 @@ export async function generateMetadata({ params }) {
     }
 
     const title = `${page.displayName || 'Portfolio'} | LinkMate`;
-    const description = page.bio || page.summary?.slice(0, 160) || `Check out ${page.displayName}'s professional portfolio`;
+    const description = page.bio || (page.summary && stripHighlights(page.summary).slice(0, 160)) || `Check out ${page.displayName}'s professional portfolio`;
     const imageUrl = page.profileImage || '/profile.jpg';
 
     // Absolute base for OG/twitter URLs (relative URLs resolve against this)
@@ -95,22 +106,6 @@ export async function generateMetadata({ params }) {
 // Fallback icon when a button key is not in buttonsIcons
 const fallbackIcon = faGlobe;
 
-// Social button colors with solid backgrounds
-const buttonStyles = {
-  email: { bg: "bg-red-500", hover: "hover:bg-red-600" },
-  mobile: { bg: "bg-green-500", hover: "hover:bg-green-600" },
-  instagram: { bg: "bg-gradient-to-br from-purple-600 to-pink-500", hover: "hover:from-purple-700 hover:to-pink-600" },
-  facebook: { bg: "bg-blue-600", hover: "hover:bg-blue-700" },
-  linkedin: { bg: "bg-blue-700", hover: "hover:bg-blue-800" },
-  youtube: { bg: "bg-red-600", hover: "hover:bg-red-700" },
-  github: { bg: "bg-gray-800", hover: "hover:bg-gray-900" },
-  geeksforgeeks: { bg: "bg-green-600", hover: "hover:bg-green-700" },
-  resume: { bg: "bg-indigo-600", hover: "hover:bg-indigo-700" },
-  discord: { bg: "bg-indigo-500", hover: "hover:bg-indigo-600" },
-  tiktok: { bg: "bg-black", hover: "hover:bg-gray-900" },
-  whatsapp: { bg: "bg-green-500", hover: "hover:bg-green-600" },
-  telegram: { bg: "bg-sky-500", hover: "hover:bg-sky-600" },
-};
 
 export default async function UserPage({ params, searchParams }) {
   const resolvedParams = await params;
@@ -169,6 +164,7 @@ export default async function UserPage({ params, searchParams }) {
     // Resume button only shows when the user explicitly set a resume URL
     const resumeLink = page.buttons?.resume || '/RESUME.pdf';
     const hasResume = !!page.buttons?.resume;
+    const heroRoles = getHeroRoles(page);
 
     // Structured data so search engines understand this is a person's profile
     const jsonLd = {
@@ -185,73 +181,33 @@ export default async function UserPage({ params, searchParams }) {
     };
 
     return (
-      <div className="bg-black text-white min-h-screen overflow-x-hidden">
+      <div className="relative isolate bg-black text-white min-h-screen overflow-x-hidden">
         <script
           type="application/ld+json"
           // Escape "<" so user content (bio, button URLs) cannot close the script tag.
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
         />
 
-        {/* === HERO SECTION - Split Layout === */}
+        {/* === PAGE BACKGROUND ===
+            Fixed to the viewport so the same particle background sits behind every
+            section while the content scrolls over it. */}
+        <div className="fixed inset-0 -z-10" aria-hidden="true">
+          <div className="absolute inset-0 bg-gradient-to-br from-black via-[#09090b] to-black"></div>
+          <ParticleNetwork className="opacity-60" />
+          <div className="absolute top-1/4 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
+
+        {/* === HERO SECTION === */}
         <section className="relative min-h-screen flex">
 
-          {/* LEFT SIDE - Profile Image (Full Height) */}
-          <div className="hidden lg:block lg:w-1/2 xl:w-2/5 relative overflow-hidden">
-            {/* Background gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black z-10"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
-
-            {/* Profile Image - Full Cover */}
-            <div className="absolute inset-0">
-              <Image
-                className="w-full h-full object-cover object-center"
-                src={page.profileImage || '/profile.jpg'}
-                alt={`${page.displayName}'s photo`}
-                fill
-                priority
-                sizes="50vw"
-              />
-            </div>
-
-            {/* Decorative elements */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-10"></div>
-            <div className="absolute top-10 left-10 w-20 h-20 border-l-2 border-t-2 border-blue-500/30 z-20"></div>
-            <div className="absolute bottom-10 right-10 w-20 h-20 border-r-2 border-b-2 border-purple-500/30 z-20"></div>
-          </div>
-
-          {/* RIGHT SIDE - Content */}
-          <div className="w-full lg:w-1/2 xl:w-3/5 relative flex items-center">
-            {/* Animated Background for right side */}
-            <div className="absolute inset-0">
-              <div className="absolute inset-0 bg-gradient-to-br from-black via-[#09090b] to-black"></div>
-
-              {/* Particle Network Animation */}
-              <ParticleNetwork className="opacity-60" />
-
-              {/* Animated gradient orbs */}
-              <div className="absolute top-1/4 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-              <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-            </div>
+          <div className="w-full relative flex items-center">
 
             {/* Content Container */}
-            <div className="relative z-10 px-8 md:px-12 lg:px-16 xl:px-20 py-20 w-full">
+            {/* Soft centred glow behind the hero text */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[640px] h-[640px] max-w-full bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
 
-              {/* Mobile Profile Image */}
-              <div className="lg:hidden mb-10 flex justify-center">
-                <div className="relative">
-                  <div className="absolute -inset-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full animate-spin-slow opacity-75 blur-sm"></div>
-                  <div className="relative w-40 h-40 rounded-full border-4 border-slate-950 overflow-hidden">
-                    <Image
-                      className="w-full h-full object-cover"
-                      src={page.profileImage || '/profile.jpg'}
-                      alt={`${page.displayName}'s avatar`}
-                      width={160}
-                      height={160}
-                      priority
-                    />
-                  </div>
-                </div>
-              </div>
+            <div className="relative z-10 px-6 md:px-12 py-24 w-full max-w-5xl mx-auto text-center">
 
               {/* Greeting — badge can be turned off in account settings */}
               {page.showAvailableBadge !== false && (
@@ -264,40 +220,30 @@ export default async function UserPage({ params, searchParams }) {
               )}
 
               {/* Name */}
-              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 leading-tight">
-                <span className="text-slate-400 text-2xl md:text-3xl font-normal block mb-2">Hello, I&apos;m</span>
-                <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
+              <h1 className={`${nameSizeClass(page.displayName)} font-bold mb-6 leading-[1.05] tracking-tight text-balance break-words`}>
+                <span className="text-zinc-400 text-xl md:text-2xl font-normal tracking-normal block mb-3">Hello, I&apos;m</span>
+                <span className="bg-gradient-to-r from-white via-indigo-100 to-white bg-clip-text text-transparent">
                   {page.displayName}
                 </span>
               </h1>
 
-              {/* Bio/Title */}
-              {page.bio && (
-                <p className="text-lg md:text-xl lg:text-2xl text-slate-400 mb-8 leading-relaxed max-w-xl min-h-[1.75em]">
-                  <Typewriter
-                    words={(() => {
-                      const list = page.bio.split(/[,;|]/).map(s => s.trim()).filter(Boolean);
-                      if (list.length === 1 && list[0].toLowerCase() === 'software developer') {
-                        return ['software developer', 'mern stack developer', 'problem solver', 'frontend engineer'];
-                      }
-                      return list;
-                    })()}
-                    speed={80}
-                    delay={2500}
-                  />
+              {/* Roles / titles — edited in the "Roles / Titles" section on /account */}
+              {heroRoles.length > 0 && (
+                <p className="text-lg md:text-xl lg:text-2xl text-zinc-400 mb-8 leading-relaxed max-w-xl mx-auto min-h-[1.75em]">
+                  <Typewriter words={heroRoles} speed={80} delay={2500} />
                 </p>
               )}
 
               {/* Location */}
               {page.location && (
-                <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-slate-300 mb-10">
+                <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full text-zinc-300 mb-10">
                   <FontAwesomeIcon icon={faLocationDot} className="w-4 h-4 text-blue-400" />
                   <span className="text-sm font-medium">{page.location}</span>
                 </div>
               )}
 
               {/* CTA Buttons */}
-              <div className="flex flex-wrap gap-4 mb-12">
+              <div className="flex flex-wrap justify-center gap-4 mb-12">
                 {hasResume && (
                   <Link
                     href={resumeLink}
@@ -316,12 +262,11 @@ export default async function UserPage({ params, searchParams }) {
               {/* Social Links */}
               {Object.keys(page.buttons || {}).length > 0 && (
                 <div>
-                  <p className="text-slate-500 text-sm uppercase tracking-wider mb-4 font-medium">Connect with me</p>
-                  <div className="flex flex-wrap gap-3">
+                  <p className="text-zinc-500 text-sm uppercase tracking-wider mb-4 font-medium">Connect with me</p>
+                  <div className="flex flex-wrap justify-center gap-3">
                     {Object.keys(page.buttons).map((buttonKey) => {
                       const url = buttonLink(buttonKey, page.buttons[buttonKey]);
                       const pingUrl = clickPingUrl(baseUrl, page.uri, url, 'social');
-                      const style = buttonStyles[buttonKey] || { bg: "bg-blue-500", hover: "hover:bg-blue-600" };
                       const icon = buttonsIcons[buttonKey] || fallbackIcon;
 
                       return (
@@ -331,14 +276,14 @@ export default async function UserPage({ params, searchParams }) {
                           target="_blank"
                           rel="noopener noreferrer"
                           ping={pingUrl}
-                          className={`group relative w-12 h-12 rounded-xl ${style.bg} ${style.hover} text-white shadow-lg flex items-center justify-center hover:scale-110 transition-all duration-300`}
+                          className={`group relative w-12 h-12 rounded-xl bg-white/5 border border-white/10 text-zinc-200 hover:text-white hover:border-transparent hover:bg-gradient-to-br hover:from-blue-500 hover:to-purple-600 hover:shadow-lg hover:shadow-blue-500/25 backdrop-blur-sm flex items-center justify-center hover:scale-110 transition-all duration-300`}
                           aria-label={buttonKey}
                         >
                           <FontAwesomeIcon
                             className="w-5 h-5"
                             icon={icon}
                           />
-                          <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-white text-slate-900 text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap capitalize shadow-lg">
+                          <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-white text-zinc-900 text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap capitalize shadow-lg">
                             {buttonKey}
                           </span>
                         </Link>
@@ -352,7 +297,7 @@ export default async function UserPage({ params, searchParams }) {
 
           {/* Scroll Indicator */}
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce z-20">
-            <Link href="#about" className="flex flex-col items-center gap-2 text-slate-500 hover:text-blue-400 transition-colors">
+            <Link href="#about" className="flex flex-col items-center gap-2 text-zinc-500 hover:text-blue-400 transition-colors">
               <span className="text-xs uppercase tracking-widest">Scroll</span>
               <FontAwesomeIcon icon={faArrowDown} className="w-4 h-4" />
             </Link>
@@ -364,7 +309,7 @@ export default async function UserPage({ params, searchParams }) {
 
           {/* About Section */}
           {page.summary && (
-            <section id="about" className="py-24 bg-slate-900/50">
+            <section id="about" className="py-24">
               <div className="max-w-6xl mx-auto px-6 lg:px-8">
                 <SummarySection summary={page.summary} />
               </div>
@@ -373,7 +318,7 @@ export default async function UserPage({ params, searchParams }) {
 
           {/* Experience Section */}
           {serializedWorkExperience?.length > 0 && (
-            <section id="experience" className="py-24 bg-slate-950">
+            <section id="experience" className="py-24">
               <div className="max-w-6xl mx-auto px-6 lg:px-8">
                 <WorkExperienceSection workExperience={serializedWorkExperience} />
               </div>
@@ -382,7 +327,7 @@ export default async function UserPage({ params, searchParams }) {
 
           {/* Projects Section */}
           {serializedProjects?.length > 0 && (
-            <section id="projects" className="py-24 bg-slate-900/50">
+            <section id="projects" className="py-24">
               <div className="max-w-6xl mx-auto px-6 lg:px-8">
                 <ProjectSection
                   projects={serializedProjects}
@@ -395,7 +340,7 @@ export default async function UserPage({ params, searchParams }) {
 
           {/* Skills Section */}
           {page.skills && Object.keys(page.skills).length > 0 && (
-            <section id="skills" className="py-24 bg-slate-950">
+            <section id="skills" className="py-24">
               <div className="max-w-6xl mx-auto px-6 lg:px-8">
                 <SkillsSection skills={page.skills} />
               </div>
@@ -404,7 +349,7 @@ export default async function UserPage({ params, searchParams }) {
 
           {/* Education Section */}
           {serializedEducation?.length > 0 && (
-            <section id="education" className="py-24 bg-slate-900/50">
+            <section id="education" className="py-24">
               <div className="max-w-6xl mx-auto px-6 lg:px-8">
                 <EducationSection education={serializedEducation} />
               </div>
@@ -413,18 +358,18 @@ export default async function UserPage({ params, searchParams }) {
 
           {/* Featured Links Section */}
           {(page.links || []).length > 0 && (
-            <section id="links" className="py-24 bg-slate-950">
+            <section id="links" className="py-24">
               <div className="max-w-4xl mx-auto px-6 lg:px-8">
                 <ScrollReveal animation="fade-up">
                   <div className="text-center mb-12">
-                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-400 text-sm font-medium mb-4">
+                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-medium mb-4">
                       <FontAwesomeIcon icon={faLink} className="w-4 h-4" />
                       Resources
                     </span>
-                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent mb-4">
+                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent mb-4">
                       Featured Links
                     </h2>
-                    <p className="text-slate-400">Check out my profiles and resources</p>
+                    <p className="text-zinc-400">Check out my profiles and resources</p>
                   </div>
                 </ScrollReveal>
 
@@ -440,10 +385,10 @@ export default async function UserPage({ params, searchParams }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         ping={clickPingUrl(baseUrl, page.uri, link.url, 'link')}
-                        className="group flex items-center gap-4 p-5 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl hover:bg-slate-800 hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-1"
+                        className="group flex items-center gap-4 p-5 bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 rounded-2xl hover:bg-zinc-800 hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-1"
                         href={link.url}
                       >
-                        <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl flex items-center justify-center overflow-hidden group-hover:from-cyan-500/30 group-hover:to-blue-500/30 transition-all duration-300">
+                        <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl flex items-center justify-center overflow-hidden group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all duration-300">
                           {link.icon ? (
                             <Image
                               className="w-full h-full object-cover rounded-xl"
@@ -455,23 +400,23 @@ export default async function UserPage({ params, searchParams }) {
                           ) : (
                             <FontAwesomeIcon
                               icon={faLink}
-                              className="w-6 h-6 text-cyan-400 group-hover:text-cyan-300 transition-colors duration-300"
+                              className="w-6 h-6 text-blue-400 group-hover:text-blue-300 transition-colors duration-300"
                             />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-white text-lg mb-1 truncate group-hover:text-cyan-400 transition-colors duration-300">
+                          <h3 className="font-semibold text-white text-lg mb-1 truncate group-hover:text-blue-400 transition-colors duration-300">
                             {link.title}
                           </h3>
                           {link.subtitle && (
-                            <p className="text-slate-500 text-sm truncate">
+                            <p className="text-zinc-500 text-sm truncate">
                               {link.subtitle}
                             </p>
                           )}
                         </div>
                         <FontAwesomeIcon
                           icon={faArrowUpRightFromSquare}
-                          className="w-5 h-5 text-slate-600 group-hover:text-cyan-400 transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
+                          className="w-5 h-5 text-zinc-600 group-hover:text-blue-400 transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"
                         />
                       </Link>
                     </ScrollReveal>
@@ -482,14 +427,17 @@ export default async function UserPage({ params, searchParams }) {
           )}
 
           {/* Contact Section */}
-          <section id="contact" className="py-24 bg-gradient-to-b from-slate-900/50 to-slate-950">
+          <section id="contact" className="py-24">
             <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
               <ScrollReveal animation="fade-up">
-                <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent mb-6">
-                  Let&apos;s Work Together
+                <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent mb-6">
+                  {/* Copy follows the "Available for opportunities" toggle */}
+                  {page.showAvailableBadge !== false ? 'Open to New Opportunities' : 'Get in Touch'}
                 </h2>
-                <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
-                  Have a project in mind? I&apos;d love to hear about it. Send me a message and let&apos;s create something amazing together.
+                <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
+                  {page.showAvailableBadge !== false
+                    ? "I'm currently looking for full-time roles. If you're hiring or know of a position that fits my experience, I'd love to connect."
+                    : "Have a question or just want to say hello? My inbox is always open."}
                 </p>
               </ScrollReveal>
 
@@ -511,7 +459,7 @@ export default async function UserPage({ params, searchParams }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       ping={clickPingUrl(baseUrl, page.uri, page.buttons.linkedin, 'social')}
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-blue-700 text-white rounded-full font-semibold text-lg hover:bg-blue-800 transition-all duration-300 shadow-lg hover:scale-105"
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 backdrop-blur-sm text-white rounded-full font-semibold text-lg hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105"
                     >
                       <FontAwesomeIcon icon={faLinkedin} className="w-5 h-5" />
                       LinkedIn
@@ -523,7 +471,7 @@ export default async function UserPage({ params, searchParams }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       ping={clickPingUrl(baseUrl, page.uri, page.buttons.github, 'social')}
-                      className="inline-flex items-center gap-3 px-8 py-4 bg-slate-800 border border-slate-700 text-white rounded-full font-semibold text-lg hover:bg-slate-700 transition-all duration-300 hover:scale-105"
+                      className="inline-flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 backdrop-blur-sm text-white rounded-full font-semibold text-lg hover:bg-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105"
                     >
                       <FontAwesomeIcon icon={faGithub} className="w-5 h-5" />
                       GitHub
@@ -536,9 +484,9 @@ export default async function UserPage({ params, searchParams }) {
         </main>
 
         {/* === FOOTER === */}
-        <footer className="py-12 bg-slate-950 border-t border-slate-800/50">
+        <footer className="py-12 border-t border-zinc-800/50">
           <div className="max-w-6xl mx-auto flex justify-center">
-            <div className="flex items-center gap-2 text-slate-500">
+            <div className="flex items-center gap-2 text-zinc-500">
               <span>Made with</span>
               <FontAwesomeIcon icon={faHeart} className="w-4 h-4 text-red-500 animate-pulse" />
               <span>using</span>
@@ -563,13 +511,13 @@ export default async function UserPage({ params, searchParams }) {
   } catch (error) {
     console.error("Error loading page:", error);
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <div className="text-center p-8 bg-slate-900 rounded-2xl shadow-xl max-w-md mx-4 border border-slate-800">
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="text-center p-8 bg-zinc-900 rounded-2xl shadow-xl max-w-md mx-4 border border-zinc-800">
           <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">😕</span>
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">Something went wrong</h1>
-          <p className="text-slate-400 mb-8">We couldn&apos;t load this portfolio. Please try again later.</p>
+          <p className="text-zinc-400 mb-8">We couldn&apos;t load this portfolio. Please try again later.</p>
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-300"

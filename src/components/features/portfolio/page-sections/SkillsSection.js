@@ -7,12 +7,12 @@ import ScrollReveal from "@/components/animations/ScrollReveal";
 
 // Skill categories with icons
 const categoryConfig = {
-  "Programming Languages": { icon: faCode, color: "from-purple-500 to-indigo-500", showProgress: true },
-  "Frontend Development": { icon: faLaptopCode, color: "from-emerald-500 to-teal-500", showProgress: true },
-  "Backend Development": { icon: faServer, color: "from-blue-500 to-cyan-500", showProgress: true },
-  "Tools & Technologies": { icon: faTools, color: "from-orange-500 to-amber-500", showProgress: true },
-  "Related Coursework": { icon: faGraduationCap, color: "from-pink-500 to-rose-500", showProgress: false },
-  "Other Coursework": { icon: faBookOpen, color: "from-violet-500 to-purple-500", showProgress: false },
+  "Programming Languages": { icon: faCode, color: "from-blue-500 to-purple-500", showProgress: true },
+  "Frontend Development": { icon: faLaptopCode, color: "from-blue-500 to-purple-500", showProgress: true },
+  "Backend Development": { icon: faServer, color: "from-blue-500 to-purple-500", showProgress: true },
+  "Tools & Technologies": { icon: faTools, color: "from-blue-500 to-purple-500", showProgress: true },
+  "Related Coursework": { icon: faGraduationCap, color: "from-blue-500 to-purple-500", showProgress: false },
+  "Other Coursework": { icon: faBookOpen, color: "from-blue-500 to-purple-500", showProgress: false },
 };
 
 // Skill icons mapping
@@ -53,6 +53,36 @@ const skillIcons = {
   "VS Code": "/skills/vscode.svg",
 };
 
+// Case-insensitive lookup so "Javascript" and "JavaScript" resolve the same icon.
+const skillIconsLower = Object.fromEntries(
+  Object.entries(skillIcons).map(([name, path]) => [name.toLowerCase(), path])
+);
+
+// Shows the skill's SVG logo, or its first letter if there is no logo
+// or the file fails to load (e.g. missing from public/skills/).
+function SkillIcon({ name }) {
+  const iconPath = skillIconsLower[name.trim().toLowerCase()];
+  const [failed, setFailed] = useState(false);
+
+  if (iconPath && !failed) {
+    return (
+      <Image
+        src={iconPath}
+        alt=""
+        width={32}
+        height={32}
+        className="w-8 h-8 object-contain"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <span className="text-2xl font-bold text-blue-400" aria-hidden="true">
+      {name.trim().charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
 export default function SkillsSection({ skills }) {
   const [activeCategory, setActiveCategory] = useState(null);
 
@@ -87,15 +117,15 @@ export default function SkillsSection({ skills }) {
       {/* Section Header */}
       <ScrollReveal animation="fade-up">
         <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm font-medium mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-medium mb-4">
             <FontAwesomeIcon icon={faLaptopCode} className="w-4 h-4" />
             Tech Stack
           </span>
           <h2 className="text-3xl md:text-4xl font-bold">
             <span className="text-white">My </span>
-            <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Skills</span>
+            <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Skills</span>
           </h2>
-          <p className="text-slate-400 mt-4 text-lg">
+          <p className="text-zinc-400 mt-4 text-lg">
             Technologies and tools I use to bring ideas to life
           </p>
         </div>
@@ -115,7 +145,7 @@ export default function SkillsSection({ skills }) {
                 aria-pressed={isActive}
                 className={`px-6 py-3 rounded-full font-medium text-sm transition-all duration-300 ${isActive
                   ? `bg-gradient-to-r ${config.color} text-white shadow-lg scale-105`
-                  : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:border-slate-600 hover:text-white"
+                  : "bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 hover:border-zinc-600 hover:text-white"
                   }`}
               >
                 {category}
@@ -144,10 +174,10 @@ export default function SkillsSection({ skills }) {
                   return (
                     <span
                       key={skillName}
-                      className="inline-flex items-center gap-2 px-5 py-3 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 hover:border-pink-500/30 transition-all duration-300 hover:-translate-y-1 hover:bg-slate-800 pop-in-animated"
+                      className="inline-flex items-center gap-2 px-5 py-3 bg-zinc-800/50 backdrop-blur-sm rounded-xl border border-zinc-700/50 hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-1 hover:bg-zinc-800 pop-in-animated"
                       style={{ animationDelay: `${index * 60}ms` }}
                     >
-                      <FontAwesomeIcon icon={currentCategoryConfig.icon} className="w-4 h-4 text-pink-400" />
+                      <FontAwesomeIcon icon={currentCategoryConfig.icon} className="w-4 h-4 text-blue-400" />
                       <span className="text-white font-medium">{skillName}</span>
                     </span>
                   );
@@ -163,7 +193,6 @@ export default function SkillsSection({ skills }) {
             {currentSkills.map((skill, index) => {
               const skillName = typeof skill === 'string' ? skill : skill.name;
               const proficiency = typeof skill === 'object' ? skill.proficiency : 80;
-              const iconPath = skillIcons[skillName];
 
               return (
                 <ScrollReveal
@@ -173,36 +202,24 @@ export default function SkillsSection({ skills }) {
                   stagger={80}
                   staggerIndex={index}
                 >
-                  <div className="group/card bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 border border-slate-700/50 hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1">
+                  <div className="group/card bg-zinc-800/50 backdrop-blur-sm rounded-2xl p-5 border border-zinc-700/50 hover:border-blue-500/30 transition-all duration-300 hover:-translate-y-1">
                     <div className="flex items-center gap-4 mb-4">
                       {/* Skill Icon */}
-                      <div className="w-12 h-12 bg-slate-700/50 rounded-xl flex items-center justify-center overflow-hidden">
-                        {iconPath ? (
-                          <Image
-                            src={iconPath}
-                            alt={skillName}
-                            width={32}
-                            height={32}
-                            className="w-8 h-8 object-contain"
-                          />
-                        ) : (
-                          <span className="text-2xl font-bold text-emerald-400">
-                            {skillName.charAt(0)}
-                          </span>
-                        )}
+                      <div className="w-12 h-12 bg-zinc-700/50 rounded-xl flex items-center justify-center overflow-hidden">
+                        <SkillIcon name={skillName} />
                       </div>
 
                       {/* Skill Info */}
                       <div className="flex-1">
                         <h4 className="font-semibold text-white text-lg">{skillName}</h4>
-                        <p className="text-slate-400 text-sm">{proficiency}% Proficiency</p>
+                        <p className="text-zinc-400 text-sm">{proficiency}% Proficiency</p>
                       </div>
                     </div>
 
                     {/* Animated Progress Bar */}
-                    <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                    <div className="h-2 bg-zinc-700/50 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full progress-fill-animated"
+                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full progress-fill-animated"
                         style={{ width: `${proficiency}%`, animationDelay: `${300 + index * 100}ms` }}
                       />
                     </div>

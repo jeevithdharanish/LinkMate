@@ -33,6 +33,9 @@ const PageSchema = new Schema({
     default: {}
   },
   summary: { type: String, default: "" },
+  // Job titles cycled by the typewriter under the name in the hero
+  // (e.g. "MERN Stack Developer", "Frontend Engineer"). Empty → derived from bio.
+  roles: { type: [String], default: [] },
   // "Available for opportunities" badge on the public page
   showAvailableBadge: { type: Boolean, default: true }
 

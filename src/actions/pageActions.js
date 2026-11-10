@@ -10,16 +10,21 @@ import { Education } from "@/models/Education";
 import { WorkExperience } from "@/models/WorkExperience";
 import { Project } from "@/models/Project";
 import mongoose from "mongoose";
+import { revalidatePath, updateTag } from "next/cache";
+import { MAX_ROLES, MAX_ROLE_LENGTH } from "@/lib/roles";
 
-// Helper function to sanitize string input
+// Normalise plain-text input: type-check, trim, length-cap, drop control characters.
+// This text is only ever rendered through React (which escapes HTML) and the JSON-LD
+// block escapes "<", so it must NOT be HTML-"sanitised" here: the old regexes
+// (e.g. /on\w+\s*=/) corrupted ordinary words — "==passionate==" was saved as "==passi=".
+// URLs go through sanitizeUrl, which only allows http(s)/mailto/tel.
 function sanitizeString(str, maxLength = 1000) {
   if (typeof str !== 'string') return '';
   return str
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
     .trim()
-    .slice(0, maxLength)
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+\s*=/gi, ''); // Remove event handlers
+    .slice(0, maxLength);
 }
 
 // Helper function to sanitize URL
@@ -88,6 +93,19 @@ function sanitizeSkillsData(skillsData) {
   return {};
 }
 
+// After any successful save, drop the cached render of every route that shows
+// portfolio data so the next render reads fresh values from MongoDB.
+// Without this, React 19 resets <form action> forms to their stale defaultValues
+// and saved edits appear to vanish from the editor.
+function revalidatePortfolio(uri) {
+  // The public page reads through unstable_cache (tag 'portfolio', 60s TTL);
+  // expire it so the owner sees their own change immediately.
+  updateTag('portfolio');
+  revalidatePath('/account');
+  revalidatePath('/analytics');
+  if (uri) revalidatePath(`/${uri}`);
+}
+
 export async function savePageSettings(formData) {
   await connectToDatabase();
   const session = await getServerSession(authOptions);
@@ -120,9 +138,10 @@ export async function savePageSettings(formData) {
       dataToUpdate.showAvailableBadge = formData.get('showAvailableBadge') === 'true';
     }
 
-    await Page.updateOne(
+    const updatedPage = await Page.findOneAndUpdate(
       { owner: session?.user?.email },
       dataToUpdate,
+      { new: true, projection: { uri: 1 } },
     );
 
     if (formData.has('avatar')) {
@@ -135,6 +154,7 @@ export async function savePageSettings(formData) {
       }
     }
 
+    revalidatePortfolio(updatedPage?.uri);
     return { success: true };
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -158,10 +178,12 @@ export async function savePageButtons(formData) {
         : sanitizeUrl(value);
     });
     const dataToUpdate = { buttons: buttonsValues };
-    await Page.updateOne(
+    const updatedPage = await Page.findOneAndUpdate(
       { owner: session?.user?.email },
       dataToUpdate,
+      { new: true, projection: { uri: 1 } },
     );
+    revalidatePortfolio(updatedPage?.uri);
     return { success: true };
   } catch (error) {
     console.error('Error saving buttons:', error);
@@ -235,6 +257,7 @@ export async function savePageLinks(links) {
       { links: sanitizedLinks },
     );
 
+    revalidatePortfolio(page.uri);
     return { success: true };
   } catch (error) {
     console.error('Error saving links:', error);
@@ -282,6 +305,7 @@ async function saveCollectionData({ uri, rawData, Model, mapper }) {
     }
 
     await dbSession.commitTransaction();
+    revalidatePortfolio(uri);
     return { success: true };
 
   } catch (error) {
@@ -339,6 +363,7 @@ export async function savePageSkills(uri, skillsData) {
       return { success: false, message: 'Page not found or permission denied.' };
     }
 
+    revalidatePortfolio(uri);
     return { success: true };
 
   } catch (error) {
@@ -360,6 +385,48 @@ export async function savePageWorkExperience(uri, workData) {
       bullets: (item.bullets || []).map(b => sanitizeString(b, 500)).slice(0, 20),
     }),
   });
+}
+
+export async function savePageRoles(uri, roles) {
+  await connectToDatabase();
+
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return { success: false, message: 'Unauthorized' };
+  }
+
+  if (!uri || !Array.isArray(roles)) {
+    return { success: false, message: 'Invalid data' };
+  }
+
+  try {
+    // Trim, cap length, drop blanks and case-insensitive duplicates, cap count
+    const seen = new Set();
+    const cleanRoles = [];
+    for (const role of roles) {
+      const clean = sanitizeString(role, MAX_ROLE_LENGTH);
+      const key = clean.toLowerCase();
+      if (!clean || seen.has(key)) continue;
+      seen.add(key);
+      cleanRoles.push(clean);
+      if (cleanRoles.length === MAX_ROLES) break;
+    }
+
+    const result = await Page.updateOne(
+      { owner: session.user.email, uri: uri },
+      { $set: { roles: cleanRoles } }
+    );
+
+    if (result.matchedCount === 0) {
+      return { success: false, message: 'Page not found' };
+    }
+
+    revalidatePortfolio(uri);
+    return { success: true, roles: cleanRoles };
+  } catch (error) {
+    console.error('Error saving roles:', error);
+    return { success: false, message: error.message };
+  }
 }
 
 export async function savePageSummary(uri, summary) {
@@ -386,6 +453,7 @@ export async function savePageSummary(uri, summary) {
       return { success: false, message: 'Page not found' };
     }
 
+    revalidatePortfolio(uri);
     return { success: true };
   } catch (error) {
     console.error('Error saving summary:', error);

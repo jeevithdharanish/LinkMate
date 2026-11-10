@@ -8,6 +8,7 @@ import { connectToDatabase } from "@/lib/mongoClient";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import PageSummaryForm from "@/components/features/portfolio/page-forms/PageSummaryForm";
+import PageRolesForm from "@/components/features/portfolio/page-forms/PageRolesForm";
 import PageSkillsForm from "@/components/features/portfolio/page-forms/PageSkillsForm";
 import PageEducationForm from "@/components/features/portfolio/page-forms/PageEducationForm";
 import { Education } from "@/models/Education";
@@ -68,6 +69,7 @@ export default async function AccountPage(props) {
 
       <div className="space-y-6 w-full">
         <PageSettingsForm page={leanPage} user={session.user} />
+        <PageRolesForm page={leanPage} />
         <PageButtonsForm page={leanPage} user={session.user} />
         <PageLinksForm page={leanPage} user={session.user} />
         <PageSummaryForm page={leanPage} user={session.user} />

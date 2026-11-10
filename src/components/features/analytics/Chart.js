@@ -15,8 +15,8 @@ import {
 } from 'recharts';
 
 const seriesColors = {
-  views: '#09f',
-  clicks: '#8b5cf6',
+  views: '#0ea5e9',  // sky-500
+  clicks: '#8b5cf6', // violet-500
 };
 
 const ranges = ['weekly', 'monthly', 'yearly'];
@@ -32,7 +32,7 @@ export default function Chart({ data }) {
 
   // Check if data exists and is not empty
   if (!data || data.length === 0) {
-    return <div className="text-gray-500 dark:text-slate-400">No data available</div>; // Handle empty or undefined data
+    return <div className="text-zinc-500 dark:text-zinc-400">No data available</div>; // Handle empty or undefined data
   }
 
   const seriesKeys = Object.keys(data[0]).filter((key) => key !== 'date');
@@ -121,7 +121,7 @@ export default function Chart({ data }) {
             className={`px-3 py-1 text-xs font-medium rounded-full capitalize transition-colors ${
               range === r
                 ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
             {r}
@@ -139,7 +139,7 @@ export default function Chart({ data }) {
             <Bar
               key={key}
               dataKey={key}
-              fill={seriesColors[key] || '#09f'}
+              fill={seriesColors[key] || '#0ea5e9'}
               radius={[4, 4, 0, 0]}
               maxBarSize={32}
             />

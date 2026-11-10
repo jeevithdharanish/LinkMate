@@ -6,7 +6,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMapLocationDot, faList, faGlobe, faCity, faMagnifyingGlassPlus, faMagnifyingGlassMinus, faExpand, faXmark, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 
 // Local TopoJSON path
+import { SCALE_COLORS, EMPTY_COLOR } from "./volumeScale";
+
 const geoUrl = "/world-110m.json";
+
+// Map volume tiers (ascending). Shared by the choropleth fill and the legend.
+const VOLUME_TIERS = [
+  { min: 1, label: '1+', color: SCALE_COLORS[0] },
+  { min: 10, label: '10+', color: SCALE_COLORS[1] },
+  { min: 100, label: '100+', color: SCALE_COLORS[2] },
+  { min: 1000, label: '1,000+', color: SCALE_COLORS[3] },
+];
 
 // Mapping ISO 2-letter codes to Numeric ISO codes used in TopoJSON
 const ISO_2_TO_NUMERIC = {
@@ -79,12 +89,10 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
   });
 
   // Calculate fill color based on metric volume
+  // Cool → hot so each tier is a distinct hue but the order still reads low → high.
   const getFillColor = (val) => {
-    if (!val || val === 0) return '#18181b'; // zinc-900 unvisited
-    if (val >= 1000) return '#059669'; // emerald-600
-    if (val >= 100) return '#10b981';  // emerald-500
-    if (val >= 10) return '#34d399';   // emerald-400
-    return '#6ee7b7';                 // emerald-300 soft
+    if (!val || val === 0) return EMPTY_COLOR;
+    return [...VOLUME_TIERS].reverse().find((tier) => val >= tier.min).color;
   };
 
   // Get cities for a given country code
@@ -111,16 +119,16 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
   return (
     <div className="glass glass-hover rounded-2xl p-6 transition-all duration-300">
       {/* Top Header & Toggles */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-200/60 dark:border-zinc-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-zinc-200/60 dark:border-zinc-800/80">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
             <FontAwesomeIcon icon={faMapLocationDot} className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
               Top Locations
             </h2>
-            <p className="text-xs text-gray-500 dark:text-zinc-400">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Interactive geographic breakdown of audience traffic
             </p>
           </div>
@@ -129,13 +137,13 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
         {/* View Mode & Scope Selectors */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Map vs List Toggle */}
-          <div className="p-1 bg-gray-100 dark:bg-[#121215] border border-gray-200/60 dark:border-zinc-800 rounded-xl flex items-center gap-1 text-xs">
+          <div className="p-1 bg-zinc-100 dark:bg-[#121215] border border-zinc-200/60 dark:border-zinc-800 rounded-xl flex items-center gap-1 text-xs">
             <button
               onClick={() => setViewMode('map')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
                 viewMode === 'map'
-                  ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm border border-gray-200/50 dark:border-zinc-700/80'
-                  : 'text-gray-500 dark:text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/50 dark:border-zinc-700/80'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-white'
               }`}
             >
               <FontAwesomeIcon icon={faGlobe} className="w-3.5 h-3.5" />
@@ -145,8 +153,8 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
                 viewMode === 'list'
-                  ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm border border-gray-200/50 dark:border-zinc-700/80'
-                  : 'text-gray-500 dark:text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/50 dark:border-zinc-700/80'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-white'
               }`}
             >
               <FontAwesomeIcon icon={faList} className="w-3.5 h-3.5" />
@@ -154,16 +162,16 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
             </button>
           </div>
 
-          <div className="h-4 w-px bg-gray-300 dark:bg-zinc-800 hidden sm:block"></div>
+          <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-800 hidden sm:block"></div>
 
           {/* Country vs City Toggle */}
-          <div className="p-1 bg-gray-100 dark:bg-[#121215] border border-gray-200/60 dark:border-zinc-800 rounded-xl flex items-center gap-1 text-xs">
+          <div className="p-1 bg-zinc-100 dark:bg-[#121215] border border-zinc-200/60 dark:border-zinc-800 rounded-xl flex items-center gap-1 text-xs">
             <button
               onClick={() => setScope('country')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
                 scope === 'country'
-                  ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm border border-gray-200/50 dark:border-zinc-700/80'
-                  : 'text-gray-500 dark:text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/50 dark:border-zinc-700/80'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-white'
               }`}
             >
               Country
@@ -172,8 +180,8 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
               onClick={() => setScope('city')}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold transition-all ${
                 scope === 'city'
-                  ? 'bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-sm border border-gray-200/50 dark:border-zinc-700/80'
-                  : 'text-gray-500 dark:text-zinc-400 hover:text-white'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/50 dark:border-zinc-700/80'
+                  : 'text-zinc-500 dark:text-zinc-400 hover:text-white'
               }`}
             >
               <FontAwesomeIcon icon={faCity} className="w-3 h-3" />
@@ -192,7 +200,7 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
               <span className="text-2xl">{getCountryFlag(tooltip.code)}</span>
               <div>
                 <p className="font-bold text-white text-sm">{tooltip.name}</p>
-                <p className="text-emerald-400 font-semibold mt-0.5">{getMetricLabel(tooltip)}</p>
+                <p className="text-indigo-400 font-semibold mt-0.5">{getMetricLabel(tooltip)}</p>
               </div>
             </div>
           )}
@@ -222,7 +230,7 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
               <FontAwesomeIcon icon={faExpand} className="w-3.5 h-3.5" />
             </button>
             {zoom > 1 && (
-              <div className="text-center text-[10px] font-bold text-emerald-400 mt-0.5">
+              <div className="text-center text-[10px] font-bold text-indigo-400 mt-0.5">
                 {zoom.toFixed(1)}x
               </div>
             )}
@@ -271,8 +279,8 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
                           // Default/selected colours are SVG presentation attributes so the
                           // hover/focus rules for .tlm-country in globals.css can override them.
                           className="tlm-country"
-                          fill={isSelected ? '#059669' : fillColor}
-                          stroke={isSelected ? '#34d399' : '#27272a'}
+                          fill={fillColor}
+                          stroke={isSelected ? '#ffffff' : '#27272a'}
                           strokeWidth={isSelected ? 1.5 : 0.5}
                         />
                       );
@@ -300,7 +308,7 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
                       {selectedCountry.topSource && (
                         <>
                           <span className="w-1 h-1 rounded-full bg-zinc-700"></span>
-                          <p className="text-[10px] text-emerald-400 font-medium">Top: {selectedCountry.topSource}</p>
+                          <p className="text-[10px] text-indigo-400 font-medium">Top: {selectedCountry.topSource}</p>
                         </>
                       )}
                     </div>
@@ -328,20 +336,20 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
                           key={city.locationName}
                           className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-800/60 transition-all group"
                         >
-                          <FontAwesomeIcon icon={faLocationDot} className="w-3 h-3 text-emerald-500/70 group-hover:text-emerald-400 transition-colors" />
+                          <FontAwesomeIcon icon={faLocationDot} className="w-3 h-3 text-indigo-500/70 group-hover:text-indigo-400 transition-colors" />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold text-zinc-200 truncate">{city.city || 'Unknown'}</p>
                             <div className="flex items-center gap-2 mt-1">
                               <div className="flex-1 bg-zinc-800 rounded-full h-1.5">
                                 <div
-                                  className="h-1.5 rounded-full bg-emerald-500 transition-all duration-500"
+                                  className="h-1.5 rounded-full bg-indigo-500 transition-all duration-500"
                                   style={{ width: `${barWidth}%` }}
                                 />
                               </div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <span className="text-xs font-bold text-emerald-400">{cityVal}</span>
+                            <span className="text-xs font-bold text-indigo-400">{cityVal}</span>
                             <p className="text-[9px] text-zinc-500 leading-tight">
                               {city.views}v · {city.clicks}c
                             </p>
@@ -397,18 +405,11 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
 
             {/* Legend (Bottom Center) */}
             <div className="flex items-center justify-center gap-4 text-xs text-zinc-400">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#6ee7b7]"></span> 1+
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#34d399]"></span> 10+
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span> 100+
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#059669]"></span> 1,000+
-              </span>
+              {VOLUME_TIERS.map((tier) => (
+                <span key={tier.min} className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: tier.color }}></span> {tier.label}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -424,19 +425,19 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
               return (
                 <div
                   key={name}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-gray-50/50 dark:bg-[#141417] border border-gray-200/50 dark:border-zinc-800/80 hover:border-emerald-500/30 transition-all"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-zinc-50/50 dark:bg-[#141417] border border-zinc-200/50 dark:border-zinc-800/80 hover:border-indigo-500/30 transition-all"
                 >
                   <span className="text-xl">{flag}</span>
-                  <span className="flex-1 text-sm font-semibold text-gray-800 dark:text-zinc-200 truncate">{name}</span>
+                  <span className="flex-1 text-sm font-semibold text-zinc-800 dark:text-zinc-200 truncate">{name}</span>
 
                   <div className="flex items-center gap-4">
                     <span className="text-xs text-zinc-400 font-medium">{item.views} views · {item.clicks} clicks</span>
-                    <span className="text-sm font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                    <span className="text-sm font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20">
                       {metric === 'ctr' ? `${item.ctr}%` : val}
                     </span>
-                    <div className="w-24 sm:w-32 bg-gray-200 dark:bg-zinc-800 rounded-full h-2">
+                    <div className="w-24 sm:w-32 bg-zinc-200 dark:bg-zinc-800 rounded-full h-2">
                       <div
-                        className="h-2 rounded-full bg-emerald-500"
+                        className="h-2 rounded-full bg-indigo-500"
                         style={{ width: `${Math.max((val / maxVal) * 100, 5)}%` }}
                       />
                     </div>
@@ -445,8 +446,8 @@ export default function TopLocationsMap({ geoData = { countryStats: [], cityStat
               );
             })
           ) : (
-            <div className="text-center py-12 text-gray-400 dark:text-zinc-500">
-              <FontAwesomeIcon icon={faGlobe} className="text-4xl mb-3 opacity-40 text-emerald-400" />
+            <div className="text-center py-12 text-zinc-400 dark:text-zinc-500">
+              <FontAwesomeIcon icon={faGlobe} className="text-4xl mb-3 opacity-40 text-indigo-400" />
               <p className="text-sm font-medium">No location data recorded yet</p>
             </div>
           )}

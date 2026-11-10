@@ -15,7 +15,7 @@ export default function HeroForm({ user }) {
         router.push('/account?desiredUsername=' + encodeURIComponent(username));
       } else {
         window.localStorage.setItem('desiredUsername', username);
-        router.push(`/login?username=${encodeURIComponent(username)}`);
+        router.push(`/main/login?username=${encodeURIComponent(username)}`);
       }
     }
   }

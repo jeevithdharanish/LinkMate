@@ -1,11 +1,11 @@
 import SessionWrapper from "@/components/features/auth/SessionWrapper";
 import ThemeProvider from "@/components/features/theme/ThemeProvider";
-import { Plus_Jakarta_Sans } from 'next/font/google'
+import { Geist } from 'next/font/google'
 import './globals.css'
 
-const plusJakartaSans = Plus_Jakarta_Sans({ 
-  subsets: ['latin'], 
-  weight: ['300', '400', '500', '600', '700', '800'] 
+// Geist is a variable font: one file covers every weight used in the app.
+const geist = Geist({
+  subsets: ['latin'],
 })
 
 export const metadata = {
@@ -33,7 +33,7 @@ export default function RootLayout({ children }) {
           `
         }} />
       </head>
-      <body className={`${plusJakartaSans.className} antialiased`}>
+      <body className={`${geist.className} antialiased`}>
         <ThemeProvider>
           <SessionWrapper>
             <main className="w-full">

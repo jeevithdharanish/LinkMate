@@ -533,7 +533,7 @@ html {
 
 .tlm-country:hover,
 .tlm-country:focus-visible {
-  fill: #10b981;
+  filter: brightness(1.35);
   stroke: #ffffff;
   stroke-width: 1;
   cursor: pointer;
