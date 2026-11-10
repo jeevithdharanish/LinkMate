@@ -257,6 +257,11 @@ async function saveCollectionData({ uri, rawData, Model, mapper }) {
     return { success: false, message: 'Invalid data provided.' };
   }
 
+  // `uri` comes from the client: only allow writing under a page the caller owns.
+  if (typeof uri !== 'string' || !(await Page.exists({ owner: userEmail, uri }))) {
+    return { success: false, message: 'Page not found or permission denied.' };
+  }
+
   const dbSession = await mongoose.startSession();
   try {
     dbSession.startTransaction();
